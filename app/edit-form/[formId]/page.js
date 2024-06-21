@@ -92,6 +92,7 @@ const EditForm = ({ params }) => {
   };
 
   const updateControllerFields = async (value, columnName) => {
+    // console.log(value, columnName);
     const result = await db
       .update(JsonForms)
       .set({ [columnName]: value })
@@ -145,6 +146,7 @@ const EditForm = ({ params }) => {
             handleSelectedTheme={handleSelectedTheme}
             selectedTheme={selectedTheme}
             formBackground={formBackground}
+            handleSignInEnable={(value) => updateControllerFields(value, 'enableSignIn')}
           />
         </div>
         <div

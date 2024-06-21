@@ -47,6 +47,7 @@ const LiveAiForm = ({ params }) => {
           deleteField={() => {}}
           selectedTheme={selectedTheme}
           jsonFormId={record.id}
+          enableSignIn={record?.enableSignIn}
         />
       </div>
       <Link

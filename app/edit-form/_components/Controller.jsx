@@ -11,17 +11,19 @@ import {
 import { Button } from '../../components/ui/button';
 import themes from '../../_data/Themes';
 import GradientBg from '../../_data/GradientBg';
+import { Checkbox } from '../../components/ui/checkbox';
 
 const Controller = ({
   handleSelectedTheme,
   handleFormBackground,
   selectedTheme,
   formBackground,
+  handleSignInEnable,
 }) => {
   const [showMore, setShowMore] = useState(false);
 
   return (
-    <div>
+    <div className="">
       <h2 className="my-1">Themes</h2>
       <Select
         onValueChange={(value) => handleSelectedTheme(value)}
@@ -92,6 +94,11 @@ const Controller = ({
       >
         {!showMore ? 'Show More' : 'Show Less'}
       </Button>
+
+      <div className="flex items-center gap-2 my-4 mt-10">
+        <Checkbox onCheckedChange={(value) => handleSignInEnable(value)} />
+        <h2>Enable Social Authentication before submit the Form</h2>
+      </div>
     </div>
   );
 };

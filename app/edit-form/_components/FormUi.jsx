@@ -18,6 +18,8 @@ import FieldEdit from './FieldEdit';
 import { userResponses } from '../../configs/schema';
 import { db } from '../../configs/index';
 import { toast } from 'sonner';
+import { SignInButton, useUser } from '@clerk/nextjs';
+import { Button } from '../../components/ui/button';
 
 const renderField = (
   field,
@@ -119,8 +121,10 @@ const FormUi = ({
   deleteField,
   selectedTheme,
   jsonFormId,
+  enableSignIn = false,
 }) => {
   const path = usePathname();
+  const { user, isSignedIn } = useUser();
 
   const [formData, setFormData] = useState({});
   let formRef = useRef();
@@ -249,9 +253,20 @@ const FormUi = ({
           </div>
         );
       })}
-      <button type="submit" className="btn btn-primary">
-        Submit
-      </button>
+
+      {!enableSignIn ? (
+        <button type="submit" className="btn btn-primary">
+          Submit
+        </button>
+      ) : isSignedIn ? (
+        <button type="submit" className="btn btn-primary">
+          Submit
+        </button>
+      ) : (
+        <Button>
+          <SignInButton mode="modal">Sign In Before Submit</SignInButton>
+        </Button>
+      )}
     </form>
   );
 };
