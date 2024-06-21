@@ -110,7 +110,7 @@ const EditForm = ({ params }) => {
   console.log(JsonForms.id, JsonForms.createdBy);
 
   return (
-    <div className="p-10">
+    <div className="p-10 bg-white">
       <div className="flex items-center justify-between">
         <h2
           onClick={() => router.back()}

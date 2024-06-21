@@ -29,7 +29,10 @@ const CreateForm = () => {
   const Prompt = `On the basis of description please give form in Json 
   format with form form_title, form form_subheading, form form_fields, 
   field_type, field_name, field_placeholder, field_name, and field_label, 
-  in Json format. and keep the key name same everytime. If field have field_options then it should have field_options with object of {value: 'one-time', label: 'One-time'} this type.  `;
+  in Json format. and keep the key name same everytime. If field have field_options 
+  then it should have field_options with object of {value: 'one-time', label: 'One-time'} this type.  
+  field_type should be one of text, email, tel, url, date, number, password, textarea, select, radio, checkbox, dropdown.
+  `;
 
   const onCreateForm = async () => {
     // console.log(userInput)

@@ -3,7 +3,7 @@ import Hero from './_components/Hero';
 
 export default function Home() {
   return (
-    <main data-theme="corporate">
+    <main className='bg-white'>
       <Hero />
     </main>
   );

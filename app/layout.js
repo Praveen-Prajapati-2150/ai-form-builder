@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.className} h-screen`}>
+        <body className={`${inter.className} bg-white h-screen`}>
           <Header />
           {/* <ThemeProvider
             attribute="class"
