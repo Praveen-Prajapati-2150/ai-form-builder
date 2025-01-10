@@ -33,11 +33,9 @@ const LiveAiForm = ({ params }) => {
     }
   };
 
-  // console.log(JsonForms);
-
   return (
     <div
-      className="flex items-center justify-center w-full p-10"
+      className="flex items-center justify-center w-full h-full p-10"
       style={{ background: formBackground }}
     >
       <div>

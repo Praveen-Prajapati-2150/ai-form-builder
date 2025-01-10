@@ -13,6 +13,7 @@ const FormListItemResp = ({ jsonForm, formRecord }) => {
   const ExportData = async () => {
     let jsonData = [];
     setLoading(true);
+
     const result = await db
       .select()
       .from(userResponses)
@@ -42,7 +43,9 @@ const FormListItemResp = ({ jsonForm, formRecord }) => {
 
   return (
     <div className="border shadow-sm rounded-lg p-4 my-5">
-      <h2 className="text-lg text-black">{jsonForm.form_title}</h2>
+      <Link href={'/dashboard/responses/' + formRecord?.id} >
+        <h2 className="text-lg text-black">{jsonForm.form_title}</h2>
+      </Link>
       <h2 className="text-sm text-gray-500">{jsonForm.form_subheading}</h2>
       <hr className="my-4" />
       <div className="flex justify-between items-center">

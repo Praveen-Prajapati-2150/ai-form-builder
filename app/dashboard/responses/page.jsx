@@ -5,10 +5,11 @@ import { db } from '../../configs';
 import { desc, eq } from 'drizzle-orm';
 import { JsonForms } from '../../configs/schema';
 import FormListItemResponse from './_components/FormListItemResp';
+import { Skeleton } from '../../components/ui/skeleton';
 
 const Responses = () => {
   const { user } = useUser();
-  const [formList, setFormList] = useState();
+  const [formList, setFormList] = useState([]);
 
   useEffect(() => {
     user && getFormList();
@@ -31,15 +32,19 @@ const Responses = () => {
         Responses
       </h2>
 
-      <div className=" bg-white grid grid-cols-2 lg:grid-cols-3 gap-5">
-        {formList &&
-          formList?.map((form, index) => (
-            <FormListItemResponse
-              key={index}
-              formRecord={form}
-              jsonForm={JSON.parse(form.jsonform)}
-            />
-          ))}
+      <div className="mt-4 bg-white grid grid-cols-2 lg:grid-cols-3 gap-5">
+        {formList.length === 0
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="w-full h-[200px] rounded-lg" />
+            ))
+          : formList &&
+            formList?.map((form, index) => (
+              <FormListItemResponse
+                key={index}
+                formRecord={form}
+                jsonForm={JSON.parse(form.jsonform)}
+              />
+            ))}
       </div>
     </div>
   );

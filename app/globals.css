@@ -74,3 +74,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* .hide-scrollbar::-webkit-scrollbar {
+  display: none; 
+} */
+
+/* Custom scrollbar styles */
+/* .custom-scrollbar::-webkit-scrollbar { */
+  /* width: 12px; Width of the scrollbar */
+/* } */
+
+/* .custom-scrollbar::-webkit-scrollbar-track { */
+  /* background: #f1f1f1; Color of the track */
+/* } */
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #bababa; /* Color of the thumb */
+  border-radius: 100px; /* Roundness of the thumb */
+  border: 1px solid #d0d0d0; /* Padding around the thumb */
+}
+
+/* .custom-scrollbar::-webkit-scrollbar-thumb:hover { */
+  /* background: #555; Color of the thumb when hovered */
+/* } */

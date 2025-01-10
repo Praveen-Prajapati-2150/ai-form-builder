@@ -6,7 +6,7 @@ import SideNav from './_components/SideNav';
 const DashboardLayout = ({ children }) => {
   return (
     <SignedIn>
-      <div className=" bg-white">
+      <div className="h-[90vh] bg-white overflow-scroll">
         <div className="md:w-64 fixed">
           <SideNav />
         </div>

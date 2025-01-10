@@ -13,10 +13,8 @@ const Header = () => {
   const { user, isSignedIn } = useUser();
   const path = usePathname();
 
-  
-
   return !path.includes('aiform') && (
-    <div className="p-5 border-b shadow-sm flex items-center justify-between">
+    <div className="h-[10vh] p-5 border-b shadow-sm flex items-center justify-between">
       <div>
         <Image src={'/logo.svg'} alt="logo" width={100} height={45} />
       </div>
