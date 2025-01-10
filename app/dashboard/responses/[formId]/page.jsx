@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/card';
-import { userResponses } from '../../../configs/schema';
+import { JsonForms, userResponses } from '../../../configs/schema';
 import { and, eq } from 'drizzle-orm';
 
 const ResponsePage = ({ params }) => {
@@ -22,9 +22,12 @@ const ResponsePage = ({ params }) => {
           .select()
           .from(JsonForms)
           .where(eq(JsonForms.id, params?.formId));
-        setFormDetails(formResult[0]); // Assuming formId is unique
+        setFormDetails(JSON.parse(formResult[0].jsonform)); // Assuming formId is unique
 
-        const responsesResult = await db.select().from(userResponses).where(eq(userResponses.formRef, params?.formId));
+        const responsesResult = await db
+          .select()
+          .from(userResponses)
+          .where(eq(userResponses.formRef, params?.formId));
         setResponses(responsesResult);
       } catch (error) {
         console.error('Error fetching response:', error);
@@ -45,18 +48,33 @@ const ResponsePage = ({ params }) => {
   };
 
   console.log(responses);
+  console.log(formDetails);
 
   return (
     <div className="container mx-auto p-4">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{formDetails?.form_title}</h2>{' '}
+          <p className="text-gray-700">{formDetails?.form_subheading}</p>
+        </div>
+        <div>
+          <p className="text-primary text-sm">
+            Number of Responses: {responses?.length}
+          </p>
+        </div>
+      </div>
+
       {responses?.length > 0 ? (
-        responses?.map((response) => (
+        responses?.map((response, index) => (
           <div key={response.id} className="mb-4 shadow-md rounded-lg">
             {/* Response Header */}
             <div
               className="flex items-center justify-between p-4 cursor-pointer"
               onClick={() => handleToggleResponse(response.id)}
             >
-              <h3 className="text-xl font-medium">{`Response #${response.id}`}</h3>
+              <h3 className="text-xl text-primary font-medium">{`Response #${
+                index + 1
+              }`}</h3>
               <svg
                 className={`h-6 w-6 transition duration-200 ${
                   response.isOpen ? 'transform rotate-180' : ''

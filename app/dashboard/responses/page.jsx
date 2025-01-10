@@ -3,17 +3,32 @@ import { useUser } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../configs';
 import { desc, eq } from 'drizzle-orm';
-import { JsonForms } from '../../configs/schema';
+import { JsonForms, userResponses } from '../../configs/schema';
 import FormListItemResponse from './_components/FormListItemResp';
 import { Skeleton } from '../../components/ui/skeleton';
 
 const Responses = () => {
   const { user } = useUser();
   const [formList, setFormList] = useState([]);
+  const [responses, setResponses] = useState(null);
 
   useEffect(() => {
     user && getFormList();
+
+    // fetchData();
   }, [user]);
+
+  // const fetchData = async () => {
+  //   try {
+  //     const responsesResult = await db
+  //       .select()
+  //       .from(userResponses)
+  //       .where(eq(userResponses.formRef, params?.formId));
+  //     setResponses(responsesResult);
+  //   } catch (error) {
+  //     console.error('Error fetching response:', error);
+  //   }
+  // };
 
   const getFormList = async () => {
     const result = await db
