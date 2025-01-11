@@ -24,10 +24,11 @@ import {
   AlertDialogTrigger,
 } from '../../components/ui/alert-dialog';
 import { Textarea } from '../../components/ui/textarea';
+import { v4 as uuidv4 } from 'uuid';
 
 const EditForm = ({ params }) => {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
   const [jsonForm, setJsonForm] = useState([]);
 
   const [updateTrigger, setUpdateTrigger] = useState();
@@ -57,9 +58,12 @@ const EditForm = ({ params }) => {
   useEffect(() => {
     if (updateTrigger) {
       setJsonForm(jsonForm);
-      updateJsonFormInDb();
     }
   }, [updateTrigger]);
+
+  useEffect(() => {
+    // updateJsonFormInDb();
+  }, [jsonForm]);
 
   useEffect(() => {
     user && GetFormData();
@@ -130,7 +134,7 @@ const EditForm = ({ params }) => {
     toast('Updated!!!!!');
   };
 
-  console.log(JsonForms.id, JsonForms.createdBy, location.path);
+  // console.log(JsonForms.id, JsonForms.createdBy, location.path);
 
   const embedCode = `<iframe src="http://localhost:3000/aiform/${params?.formId}"  width="100%"
         height="850" ></iframe>`;
@@ -138,96 +142,99 @@ const EditForm = ({ params }) => {
   // console.log(embedCode);
 
   return (
-    <div className="p-10 h-[150vh] bg-white">
-      <div className="flex items-center justify-between">
-        <h2
-          onClick={() => router.back()}
-          className="flex items-center gap-2 my-5 cursor-pointer hover:font-bold"
-        >
-          <ArrowLeft /> Back
-        </h2>
-        <div className="flex items-center gap-2">
-          <Link href={`/aiform/${params?.formId}`} target="_blank">
-            <Button className="flex items-center gap-2">
-              <SquareArrowOutUpRight className="h-5 w-5" /> Live Preview
-            </Button>
-          </Link>
-          <AlertDialog className="w-full">
-            <AlertDialogTrigger asChild>
-              <Button className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600">
-                <Code className="h-5 w-5" /> Embed Code
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Generated Embed Code</AlertDialogTitle>
-                <AlertDialogDescription>Embed Code:</AlertDialogDescription>
-              </AlertDialogHeader>
+    <>
+      {isSignedIn && (
+        <div className="p-10 h-[150vh] bg-white">
+          <div className="flex items-center justify-between">
+            <h2
+              onClick={() => router.back()}
+              className="flex items-center gap-2 my-5 cursor-pointer hover:font-bold"
+            >
+              <ArrowLeft /> Back
+            </h2>
+            <div className="flex items-center gap-2">
+              <Link href={`/aiform/${params?.formId}`} target="_blank">
+                <Button className="flex items-center gap-2">
+                  <SquareArrowOutUpRight className="h-5 w-5" /> Live Preview
+                </Button>
+              </Link>
+              <AlertDialog className="w-full">
+                <AlertDialogTrigger asChild>
+                  <Button className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600">
+                    <Code className="h-5 w-5" /> Embed Code
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Generated Embed Code</AlertDialogTitle>
+                    <AlertDialogDescription>Embed Code:</AlertDialogDescription>
+                  </AlertDialogHeader>
 
-              <Textarea className="w-auto" value={embedCode} />
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(embedCode);
-                  // alert('Embed code copied to clipboard!');
-                  setCopyText('Embed code copied to clipboard!');
+                  <Textarea className="w-auto" value={embedCode} />
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(embedCode);
+                      // alert('Embed code copied to clipboard!');
+                      setCopyText('Embed code copied to clipboard!');
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                  <p className="text-green-400 text-center pt-1">{copyText}</p>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    {/* <AlertDialogAction>Continue</AlertDialogAction> */}
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <RWebShare
+                data={{
+                  text: jsonForm.form_subheading,
+                  //   url:
+                  //     process.env.NEXT_PUBLIC_BASE_URL + '/aiform/' + params?.formId,
+                  title: jsonForm.form_title,
                 }}
+                onClick={() => console.log('shared successfully!')}
               >
-                Copy to Clipboard
-              </Button>
-              <p className="text-green-400 text-center pt-1">{copyText}</p>
+                <Button className="flex items-center gap-2 bg-green-600 hover:bg-green-700">
+                  <Share2 className="h-5 w-5" /> Share
+                </Button>
+              </RWebShare>
+            </div>
+          </div>
 
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                {/* <AlertDialogAction>Continue</AlertDialogAction> */}
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-white">
+            <div className="p-5 border rounded-lg shadow-md">
+              <Controller
+                handleFormBackground={handleFormBackground}
+                handleSelectedTheme={handleSelectedTheme}
+                selectedTheme={selectedTheme}
+                formBackground={formBackground}
+                handleSignInEnable={(value) =>
+                  updateControllerFields(value, 'enableSignIn')
+                }
+              />
+            </div>
 
-          <RWebShare
-            data={{
-              text: jsonForm.form_subheading,
-              //   url:
-              //     process.env.NEXT_PUBLIC_BASE_URL + '/aiform/' + params?.formId,
-              title: jsonForm.form_title,
-            }}
-            onClick={() => console.log('shared successfully!')}
-          >
-            <Button className="flex items-center gap-2 bg-green-600 hover:bg-green-700">
-              <Share2 className="h-5 w-5" /> Share
-            </Button>
-          </RWebShare>
+            <div
+              className="md:col-span-2 overflow-auto border rounded-lg p-5 h-screen shadow-md flex items-start justify-center hide-scrollbar"
+              style={{ background: formBackground }}
+            >
+              <FormUi
+                jsonForm={jsonForm}
+                onFieldUpdate={onFieldUpdate}
+                deleteField={deleteField}
+                selectedTheme={selectedTheme}
+                jsonFormId={JsonForms.id}
+                formId={params.formId}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-white">
-        
-        <div className="p-5 border rounded-lg shadow-md">
-          <Controller
-            handleFormBackground={handleFormBackground}
-            handleSelectedTheme={handleSelectedTheme}
-            selectedTheme={selectedTheme}
-            formBackground={formBackground}
-            handleSignInEnable={(value) =>
-              updateControllerFields(value, 'enableSignIn')
-            }
-          />
-        </div>
-
-        <div
-          className="md:col-span-2 overflow-auto border rounded-lg p-5 h-screen shadow-md flex items-start justify-center hide-scrollbar"
-          style={{ background: formBackground }}
-        >
-          <FormUi
-            jsonForm={jsonForm}
-            onFieldUpdate={onFieldUpdate}
-            deleteField={deleteField}
-            selectedTheme={selectedTheme}
-            jsonFormId={JsonForms.id}
-          />
-        </div>
-
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

@@ -15,12 +15,32 @@ import { Label } from '../../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Textarea } from '../../components/ui/textarea';
 import FieldEdit from './FieldEdit';
-import { userResponses } from '../../configs/schema';
+import { JsonForms, userResponses } from '../../configs/schema';
 import { db } from '../../configs/index';
 import { toast } from 'sonner';
 import { SignInButton, useUser } from '@clerk/nextjs';
 import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { SortableItem } from './SortableItem';
+import { v4 as uuidv4 } from 'uuid';
+import { eq } from 'drizzle-orm';
+import { GripVertical } from 'lucide-react';
 
 const renderField = (
   field,
@@ -123,12 +143,77 @@ const FormUi = ({
   selectedTheme,
   jsonFormId,
   enableSignIn = false,
+  formId,
 }) => {
   const path = usePathname();
+  let formRef = useRef();
   const { user, isSignedIn } = useUser();
 
   const [formData, setFormData] = useState({});
-  let formRef = useRef();
+  const [fields, setFields] = useState(jsonForm?.form_fields || []);
+  const [hoverIcon, setHoverIcon] = useState(false);
+
+  // console.log('fields', fields);
+  // console.log({ params });
+  // console.log('jsonForm', jsonForm);
+
+  useEffect(() => {
+    const fieldsWithIds = jsonForm?.form_fields?.map((field) => ({
+      ...field,
+      id: uuidv4(),
+    }));
+
+    // setFields(jsonForm?.form_fields);
+    setFields(fieldsWithIds);
+  }, [jsonForm?.form_fields]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = fields.findIndex(
+        (field, index) => field.id === active.id
+      );
+      const newIndex = fields.findIndex((field, index) => field.id === over.id);
+
+      const updatedFields = arrayMove(fields.slice(), oldIndex, newIndex); // Avoid mutating the original state
+
+      setFields(updatedFields);
+
+      try {
+        await updateDatabase(updatedFields);
+        console.log('Database updated successfully');
+      } catch (error) {
+        console.error('Error updating database:', error);
+      }
+    }
+  };
+
+  const updateDatabase = async (updatedFields) => {
+    let updatedjsonform_form_fields = {
+      ...jsonForm,
+      form_fields: updatedFields,
+    };
+
+    console.log(updatedjsonform_form_fields);
+
+    try {
+      await db
+        .update(JsonForms)
+        .set({ jsonform: JSON.stringify(updatedjsonform_form_fields) })
+        .where(eq(JsonForms.id, formId));
+      console.log('Database updated successfully');
+    } catch (error) {
+      console.error('Error updating database:', error);
+    }
+  };
 
   const handleInputChange = (event, field_label) => {
     const value = event.target ? event.target.value : event;
@@ -153,17 +238,10 @@ const FormUi = ({
     setFormData(formData);
   };
 
-  console.log(formData);
-
-  // useEffect(() => {
-  //   document.documentElement.setAttribute('data-theme', selectedTheme);
-  // }, [selectedTheme]);
+  // console.log(formData);
 
   const handleSubmit = async (e) => {
-    // console.log(formData);
     e.preventDefault();
-
-    // console.log({jsonFormId})
 
     const result = await db.insert(userResponses).values({
       jsonResponse: formData,
@@ -181,7 +259,7 @@ const FormUi = ({
     }
   };
 
-  console.log(jsonForm);
+  // console.log(jsonForm);
 
   return (
     <form
@@ -207,79 +285,89 @@ const FormUi = ({
         )}
       </h2>
 
-      {/* {jsonForm?.form_fields.length > 0 */}
-      {!jsonForm?.form_fields
-        ? Array.from({ length: 6 }).map((_, index) => (
-            <div className="flex flex-col">
-              <Skeleton
-                key={index}
-                className=" w-[100px] h-[15px] rounded-lg"
-              />
-              <Skeleton
-                key={index}
-                className="mt-1 mb-4 w-full h-[38px] rounded-lg"
-              />
-            </div>
-          ))
-        : jsonForm?.form_fields?.map((field, index) => {
-            return (
-              <div key={index} className="my-3 flex gap-2">
-                <div className="w-full">
-                  {field.field_type === 'checkbox' && !field.field_options ? (
-                    <>
-                      <div key={index} className="flex items-center gap-2">
-                        <Checkbox
-                          // onCheckedChange={(checked) =>
-                          //   handleCheckboxChange(
-                          // checked,
-                          // option.value,
-                          // field.field_label
-                          //   )
-                          // }
-                          // checked={field.value}
-                          onCheckedChange={(checked) =>
-                            // handleCheckboxChange(
-                            //   checked,
-                            //   option.value,
-                            //   field.field_label
-                            // )
-                            handleInputChange(checked, field.field_label)
-                          }
-                          name={field.field_name}
-                          id={field.field_name}
-                        />
-                        <Label
-                          className="text-xs text-gray-500"
-                          htmlFor={field.field_name}
-                        >
-                          {field.field_label}
-                        </Label>
+      {!fields ? (
+        Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="flex flex-col">
+            <Skeleton className=" w-[100px] h-[15px] rounded-lg" />
+            <Skeleton className="mt-1 mb-4 w-full h-[38px] rounded-lg" />
+          </div>
+        ))
+      ) : (
+        <div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              id="formFields"
+              items={fields?.map((f) => String(f.id))}
+            >
+              {fields?.map((field, index) => {
+                return (
+                  <SortableItem key={field.id} id={String(field.id)}>
+                    <div className="flex items-center justify-between">
+                      <div data-drag-handle>
+                        <GripVertical className="text-gray-400 hover:text-gray-500" />
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <Label className="text-xs text-gray-500">
-                        {field.field_label}
-                      </Label>
-                      {renderField(
-                        field,
-                        handleInputChange,
-                        formData,
-                        handleCheckboxChange
-                      )}
-                    </>
-                  )}
-                </div>
-                {!path.includes('aiform') && (
-                  <FieldEdit
-                    defaultValue={field}
-                    onUpdate={(value) => onFieldUpdate(value, index)}
-                    deleteField={() => deleteField(index)}
-                  />
-                )}
-              </div>
-            );
-          })}
+
+                      <div
+                        className="my-3 flex gap-2 w-[100%]"
+                        onPointerDown={(event) => event.stopPropagation()}
+                      >
+                        <div className="w-full">
+                          {field.field_type === 'checkbox' &&
+                          !field.field_options ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  onCheckedChange={(checked) =>
+                                    handleInputChange(
+                                      checked,
+                                      field.field_label
+                                    )
+                                  }
+                                  name={field.field_name}
+                                  id={field.field_name}
+                                />
+                                <Label
+                                  className="text-xs text-gray-500"
+                                  htmlFor={field.field_name}
+                                >
+                                  {field.field_label}
+                                </Label>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <Label className="text-xs text-gray-500">
+                                {field.field_label}
+                              </Label>
+                              {renderField(
+                                field,
+                                handleInputChange,
+                                formData,
+                                handleCheckboxChange
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {isSignedIn && (
+                          <FieldEdit
+                            defaultValue={field}
+                            onUpdate={(value) => onFieldUpdate(value, index)}
+                            deleteField={() => deleteField(index)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </SortableItem>
+                );
+              })}
+            </SortableContext>
+          </DndContext>
+        </div>
+      )}
 
       {!enableSignIn ? (
         <button type="submit" className="btn btn-primary">

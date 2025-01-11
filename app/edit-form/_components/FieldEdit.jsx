@@ -20,7 +20,9 @@ import {
 } from '../../components/ui/alert-dialog';
 
 const FieldEdit = ({ defaultValue, onUpdate, deleteField }) => {
+
   const [label, setLabel] = React.useState(defaultValue.field_label);
+  
   const [placeholder, setPlaceholder] = React.useState(
     defaultValue.field_placeholder
   );
