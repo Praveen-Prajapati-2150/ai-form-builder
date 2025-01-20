@@ -48,14 +48,17 @@ const EditForm = ({ params }) => {
   }, [copyText]);
 
   const onFieldUpdate = (value, index) => {
-
-    console.log(value, index)
+    console.log(value, index);
 
     let copy = {
       ...jsonForm,
       form_fields: jsonForm.form_fields.map((field, i) =>
         i === index
-          ? { ...field, field_label: value.label, field_placeholder: value.placeholder }
+          ? {
+              ...field,
+              field_label: value.label,
+              field_placeholder: value.placeholder,
+            }
           : field
       ),
     };
@@ -113,10 +116,17 @@ const EditForm = ({ params }) => {
   };
 
   const deleteField = async (indexToRemove) => {
-    const result = jsonForm.form_fields.filter((item, index) => {
-      return index != indexToRemove;
-    });
-    jsonForm.form_fields = result;
+    const updatedFields = jsonForm.form_fields.filter(
+      (item, index) => index !== indexToRemove
+    );
+
+    const updatedJsonForm = {
+      ...jsonForm,
+      form_fields: updatedFields,
+    };
+
+    setJsonForm(updatedJsonForm);
+    await updateJsonFormInDb(updatedJsonForm);
   };
 
   const handleSelectedTheme = (value) => {
