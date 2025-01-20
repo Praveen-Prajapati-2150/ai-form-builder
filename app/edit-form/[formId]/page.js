@@ -31,7 +31,6 @@ const EditForm = ({ params }) => {
   const { user, isSignedIn } = useUser();
   const [jsonForm, setJsonForm] = useState([]);
 
-  const [updateTrigger, setUpdateTrigger] = useState();
   const [record, setRecord] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState();
   const [formBackground, setFormBackground] = useState('#fff');
@@ -49,21 +48,29 @@ const EditForm = ({ params }) => {
   }, [copyText]);
 
   const onFieldUpdate = (value, index) => {
-    jsonForm.form_fields[index].label = value.label;
-    jsonForm.form_fields[index].placeholder = value.placeholder;
 
-    setUpdateTrigger(Date.now());
+    console.log(value, index)
+
+    let copy = {
+      ...jsonForm,
+      form_fields: jsonForm.form_fields.map((field, i) =>
+        i === index
+          ? { ...field, field_label: value.label, field_placeholder: value.placeholder }
+          : field
+      ),
+    };
+
+    // let copy = {...jsonForm}
+
+    // copy.form_fields[index].label = value.label;
+    // copy.form_fields[index].placeholder = value.placeholder;
+    console.log(copy);
+
+    setJsonForm(copy);
+    updateJsonFormInDb(copy);
+
+    // setUpdateTrigger(Date.now());
   };
-
-  useEffect(() => {
-    if (updateTrigger) {
-      setJsonForm(jsonForm);
-    }
-  }, [updateTrigger]);
-
-  useEffect(() => {
-    // updateJsonFormInDb();
-  }, [jsonForm]);
 
   useEffect(() => {
     user && GetFormData();
@@ -80,16 +87,20 @@ const EditForm = ({ params }) => {
         )
       );
 
+    console.log(result);
+
     setRecord(result[0]);
     setSelectedTheme(result[0].theme);
     setFormBackground(result[0].background);
     setJsonForm(JSON.parse(result[0].jsonform));
   };
 
-  const updateJsonFormInDb = async () => {
+  const updateJsonFormInDb = async (data) => {
+    console.log(data);
+
     const result = await db
       .update(JsonForms)
-      .set({ jsonform: jsonForm })
+      .set({ jsonform: data })
       .where(
         and(
           eq(JsonForms.id, record.id),
@@ -106,7 +117,6 @@ const EditForm = ({ params }) => {
       return index != indexToRemove;
     });
     jsonForm.form_fields = result;
-    setUpdateTrigger(Date.now());
   };
 
   const handleSelectedTheme = (value) => {
@@ -133,8 +143,6 @@ const EditForm = ({ params }) => {
 
     toast('Updated!!!!!');
   };
-
-  // console.log(JsonForms.id, JsonForms.createdBy, location.path);
 
   const embedCode = `<iframe src="http://localhost:3000/aiform/${params?.formId}"  width="100%"
         height="850" ></iframe>`;

@@ -96,14 +96,23 @@ const ResponsePage = ({ params }) => {
             {/* Response Content (conditionally rendered) */}
             {response.isOpen && (
               <div className="p-4">
-                <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <dl className="grid grid-cols-1 md:grid-cols-2">
                   {Object.entries(JSON.parse(response.jsonResponse)).map(
-                    ([key, value]) => (
-                      <React.Fragment key={key}>
-                        {' '}
-                        {/* Use React.Fragment */}
-                        <dt className="font-medium">{key}</dt>
-                        <dd className="break-words">{value}</dd>
+                    ([key, value], index) => (
+                      <React.Fragment
+                        // className={`${index % 2 == 0 ? 'bg-grey-400' : ''}`}
+                        key={key}
+                      >
+                        {/* <div
+                          className={`${index % 2 == 0 ? 'bg-gray-400' : ''} `}
+                        > */}
+                          <dt
+                            className={`font-medium p-2 ${index % 2 == 0 ? 'bg-gray-300' : ''}`}
+                          >
+                            {key}
+                          </dt>
+                          <dd className={`break-words p-2 ${index % 2 == 0 ? 'bg-gray-300' : ''}`}>{value}</dd>
+                        {/* </div> */}
                       </React.Fragment>
                     )
                   )}
